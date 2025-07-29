@@ -13,7 +13,7 @@ function LayoutDefault() {
                         <div className="col-2 g-0 ">
                             <Sidebar />
                         </div>
-                        <div className="col-10 g-0">
+                        <div className=" main col-10 ">
                             <Main />
                         </div>
                     </div>

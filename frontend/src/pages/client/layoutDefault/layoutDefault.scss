@@ -88,9 +88,115 @@ a {
                 background-color: #f39c12;
                 color: black;
             }
-
         }
+    }
+}
+
+// sidebar
+.sidebar {
+    width: 100%;
+    background-color: #f8f9fa;
+
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+
+    &__menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
 
     }
 
+    &__item {
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+
+        a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            padding: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+
+            &:hover {
+                color: #65abf5;
+            }
+
+            .icon {
+                font-size: 20px;
+                margin-bottom: 3px;
+            }
+
+
+        }
+    }
+
+    &__item--active {
+        a {
+            color: #65abf5;
+            display: flex;
+            font-weight: 500;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+
+            .icon {
+                font-size: 20px;
+                margin-bottom: 3px;
+            }
+        }
+    }
+}
+
+// main
+.main {
+    background-color: #fff;
+    border-left: 1px solid #b4b4b4;
+}
+
+// footer
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+
+    .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .social-links {
+        a {
+            margin: 0 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+
+            &:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+
+            .icon {
+                font-size: 18px;
+            }
+        }
+    }
+
+    .copyright {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #999;
+    }
 }
