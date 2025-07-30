@@ -1,7 +1,7 @@
 import './layoutDefault.scss';
 import { IoHomeSharp } from "react-icons/io5";
 import { FaUserFriends, FaRegListAlt, FaNewspaper } from "react-icons/fa";
-function sidebar() {
+function Sidebar() {
     return (
         <div className="sidebar">
             <div className="sidebar__container">
@@ -35,4 +35,4 @@ function sidebar() {
     );
 }
 
-export default sidebar;
+export default Sidebar;

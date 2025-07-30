@@ -1,6 +1,6 @@
 import './layoutDefault.scss';
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
-function footer() {
+function Footer() {
     return (
         <footer className="footer">
             <div className="container">
@@ -21,4 +21,4 @@ function footer() {
         </footer>
     );
 }
-export default footer;
+export default Footer;
