@@ -5,6 +5,8 @@ import Login from "../pages/client/auth/login";
 import LoginAdmin from "../pages/admin/auth/login";
 import PrivateRoute from "../components/privateRoute";
 import Dashboard from "../pages/admin/dashboard/dashboard";
+import LayoutDefaultAdmin from "../pages/admin/layouDefault";
+
 export const routes = [
     {
         path: "/",
@@ -15,7 +17,7 @@ export const routes = [
                 element: <Home />,
             },
             {
-                index: "/login",
+                path: "/login",
                 element: <Login />,
             }
         ]
@@ -31,8 +33,13 @@ export const routes = [
                 element: <PrivateRoute />,
                 children: [
                     {
-                        index: true,
-                        element: <Dashboard />,
+                        element: <LayoutDefaultAdmin />,
+                        children: [
+                            {
+                                index: true,
+                                element: <Dashboard />,
+                            }
+                        ]
                     }
                 ]
             }

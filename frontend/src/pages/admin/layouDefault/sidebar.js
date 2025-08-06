@@ -1,6 +1,9 @@
 import './layoutDefault.scss';
-import { IoHomeSharp } from "react-icons/io5";
-import { FaUserFriends, FaRegListAlt, FaNewspaper } from "react-icons/fa";
+import { IoIosSettings } from "react-icons/io";
+import { MdCategory } from "react-icons/md";
+import { FiLogOut } from "react-icons/fi";
+import { MdDashboard } from "react-icons/md";
+import { FaUserFriends, FaRegListAlt } from "react-icons/fa";
 function Sidebar() {
     return (
         <div className="sidebar">
@@ -8,8 +11,8 @@ function Sidebar() {
                 <ul className="sidebar__menu">
                     <li className="sidebar__item--active">
                         <a href="/">
-                            <div className="icon"><IoHomeSharp /></div>
-                            <span>Trang chủ</span>
+                            <div className="icon"><MdDashboard /></div>
+                            <span>Dashboard</span>
                         </a></li>
                     <li className="sidebar__item">
                         <a href="/courses">
@@ -18,15 +21,27 @@ function Sidebar() {
                         </a>
                     </li>
                     <li className="sidebar__item">
-                        <a href="/chat">
+                        <a href="/users">
                             <div className="icon"><FaUserFriends /></div>
-                            <span>Bạn bè</span>
+                            <span>Tài khoản</span>
                         </a>
                     </li>
                     <li className="sidebar__item">
-                        <a href="/news">
-                            <div className="icon"><FaNewspaper /></div>
-                            <span>Bản tin</span>
+                        <a href="/categories">
+                            <div className="icon"><MdCategory /></div>
+                            <span>Danh mục</span>
+                        </a>
+                    </li>
+                    <li className="sidebar__item">
+                        <a href="/settings">
+                            <div className="icon"><IoIosSettings /></div>
+                            <span>Cài đặt </span>
+                        </a>
+                    </li>
+                    <li className="sidebar__item">
+                        <a href="/logout">
+                            <div className="icon"><FiLogOut /></div>
+                            <span>Đăng xuất </span>
                         </a>
                     </li>
                 </ul>
@@ -34,5 +49,4 @@ function Sidebar() {
         </div>
     );
 }
-
 export default Sidebar;

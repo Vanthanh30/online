@@ -1,9 +1,8 @@
-import Header from './header';
-import Footer from './footer';
+import Header from "./header";
+import Sidebar from "./sidebar";
 import './layoutDefault.scss';
-import Sidebar from './sidebar';
-import Main from './main';
-function LayoutDefault() {
+import Main from "./main";
+function layoutDefaultAdmin() {
     return (
         <>
             <Header />
@@ -19,8 +18,7 @@ function LayoutDefault() {
                     </div>
                 </div>
             </div>
-            <Footer />
         </>
-    );
+    )
 }
-export default LayoutDefault;
+export default layoutDefaultAdmin;
