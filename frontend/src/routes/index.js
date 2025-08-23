@@ -5,7 +5,11 @@ import LoginAdmin from "../pages/admin/auth/login";
 import AdminPrivateRoute from "../components/AdminPrivateRoute/index";
 import AdminLayout from "../pages/admin/layoutDefault/index";
 import Dashboard from "../pages/admin/dashboard/index";
-
+import Categories from "../pages/admin/categories/index";
+import Courses from "../pages/admin/course/index";
+import AddCourse from "../pages/admin/course/addCourse";
+import Accounts from "../pages/admin/accounts/index";
+import CreateAccounts from "../pages/admin/accounts/createAccount";
 export const routes = [
     {
         path: "/",
@@ -22,7 +26,7 @@ export const routes = [
         ]
     },
     {
-        path: "/admin",
+        path: "/admin/",
         children: [
             {
                 path: "login", // "/admin/login"
@@ -37,6 +41,26 @@ export const routes = [
                             {
                                 index: true, // "/admin"
                                 element: <Dashboard />,
+                            },
+                            {
+                                path: 'categories',
+                                element: <Categories />,
+                            },
+                            {
+                                path: 'courses/',
+                                element: <Courses />,
+                            },
+                            {
+                                path: 'courses/add',
+                                element: <AddCourse />,
+                            },
+                            {
+                                path: 'accounts',
+                                element: <Accounts />,
+                            },
+                            {
+                                path: 'accounts/create',
+                                element: <CreateAccounts />,
                             },
                         ]
                     }
