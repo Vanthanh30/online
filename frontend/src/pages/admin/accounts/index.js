@@ -1,31 +1,24 @@
 import './account.scss'
+import { useEffect, useState } from 'react';
+import { getUsers } from '../../../services/admin/userService';
+import { useNavigate } from 'react-router-dom';
 function AdminAccountsPage() {
-    const data = [
-        {
-            id: 1,
-            image: "https://via.placeholder.com/150",
-            name: "Nguyễn Văn A",
-            email: "a@example.com",
-            role: "Admin",
-            status: "Đang hoạt động"
-        },
-        {
-            id: 2,
-            image: "https://via.placeholder.com/150",
-            name: "Trần Thị B",
-            email: "b@example.com",
-            role: "Editor",
-            status: "Đang hoạt động"
-        },
-        {
-            id: 3,
-            image: "https://via.placeholder.com/150",
-            name: "Lê Văn C",
-            email: "c@example.com",
-            role: "Viewer",
-            status: "Đang hoạt động"
-        }
-    ];
+    const [data, setData] = useState([]);
+    const navigate = useNavigate();
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            try {
+                const res = await getUsers();
+                setData(res.data.users || []);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchAccounts();
+    }, []);
+    const handleEdit = (id) => {
+        navigate(`/admin/accounts/edit/${id}`);
+    };
     return (
         <div className="accounts">
             <div className="container">
@@ -47,25 +40,25 @@ function AdminAccountsPage() {
                             </thead>
                             <tbody>
                                 {data.map((account, index) => (
-                                    <tr key={account.id}>
+                                    <tr key={account._id}>
                                         <td>{index + 1}</td>
                                         <td>
                                             <img
-                                                src={account.image}
-                                                alt={account.name}
+                                                src={account.avatar}
+                                                alt={account.fullName}
                                                 className="accounts__image"
                                             />
                                         </td>
-                                        <td>{account.name}</td>
+                                        <td>{account.fullName}</td>
                                         <td>{account.email}</td>
-                                        <td>{account.role}</td>
+                                        <td>{account.role_id}</td>
                                         <td>
                                             <span className={`badge ${account.status === "Đang hoạt động" ? "bg-success" : account.status === "Đã khóa" ? "bg-danger" : "bg-warning"}`}>
                                                 {account.status}
                                             </span>
                                         </td>
                                         <td>
-                                            <button className="btn accounts__btn-edit">Sửa</button>
+                                            <button className="btn accounts__btn-edit" onClick={() => handleEdit(account._id)}>Sửa</button>
                                             <button className="btn accounts__btn-delete">Xóa</button>
                                         </td>
                                     </tr>

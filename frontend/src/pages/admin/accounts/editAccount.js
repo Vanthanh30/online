@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createUser } from "../../../services/admin/userService";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getUserById, editUser } from "../../../services/admin/userService";
 import "./account.scss";
 
-function AddUser() {
+function EditAccount() {
+    const { id } = useParams();
+    console.log("User ID:", id)
     const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
@@ -13,20 +16,49 @@ function AddUser() {
         role_id: "user",
         status: "active",
     });
+    const [preview, setPreview] = useState("");
     const [avatar, setAvatar] = useState(null);
-    const [preview, setPreview] = useState(null);
-    const [loading, setLoading] = useState(false); // trạng thái gửi
+    const [loading, setLoading] = useState(false);
 
+    // Lấy dữ liệu user theo id khi load trang
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await getUserById(id);
+                const user = res.data.user;
+                setFormData({
+                    fullName: user.fullName,
+                    email: user.email,
+                    password: "", // bỏ trống, chỉ nhập nếu muốn đổi
+                    phone: user.phone,
+                    role_id: user.role_id,
+                    status: user.status,
+                });
+                setPreview(user.avatar); // ảnh từ DB
+            } catch (err) {
+                console.error(err);
+                alert("Không lấy được dữ liệu user");
+            }
+        };
+        fetchUser();
+    }, [id]);
+
+    // Xử lý thay đổi input
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
+    // Xử lý chọn ảnh
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        setAvatar(file);
-        if (file) setPreview(URL.createObjectURL(file));
+        if (file) {
+            setAvatar(file);
+            setPreview(URL.createObjectURL(file));
+        }
     };
 
+    // Toggle trạng thái
     const handleToggleStatus = () => {
         setFormData({
             ...formData,
@@ -34,34 +66,40 @@ function AddUser() {
         });
     };
 
+    // Cancel
+    const handleCancel = () => {
+        navigate(-1);
+    };
+
+    // Submit cập nhật
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (loading) return; // tránh bấm nhiều lần
-        setLoading(true);
-
-        const data = new FormData();
-        Object.entries(formData).forEach(([key, value]) => data.append(key, value));
-        if (avatar) data.append("avatar", avatar);
-
         try {
-            const res = await createUser(data);
-            alert(res.data.message);
+            setLoading(true);
+
+            const data = new FormData();
+            Object.keys(formData).forEach((key) => {
+                data.append(key, formData[key]);
+            });
+            if (avatar) {
+                data.append("avatar", avatar);
+            }
+
+            await editUser(id, data);
+            alert("Cập nhật thành công!");
             navigate("/admin/accounts");
         } catch (err) {
-            alert(err.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại.");
+            console.error(err);
+            alert("Lỗi khi cập nhật user");
         } finally {
             setLoading(false);
         }
+    };
 
-    };
-    const handleCancel = () => {
-        navigate(-1); // quay lại trang trước
-    };
     return (
         <div className="add-user">
             <div className="card">
-                <h1 className="card-title">➕ Thêm tài khoản</h1>
+                <h1 className="card-title">✏️ Sửa tài khoản</h1>
 
                 <form onSubmit={handleSubmit} className="form">
                     <div className="form-group">
@@ -89,14 +127,13 @@ function AddUser() {
                     </div>
 
                     <div className="form-group">
-                        <label>Mật khẩu</label>
+                        <label>Mật khẩu (bỏ trống nếu không đổi)</label>
                         <input
                             type="password"
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            placeholder="Nhập mật khẩu"
-                            required
+                            placeholder="Nhập mật khẩu mới"
                         />
                     </div>
 
@@ -123,6 +160,7 @@ function AddUser() {
                             <option value="editor">Editor</option>
                         </select>
                     </div>
+
                     <div className="form-group toggle-status">
                         <label>Trạng thái</label>
                         <div
@@ -162,4 +200,4 @@ function AddUser() {
     );
 }
 
-export default AddUser;
+export default EditAccount;
