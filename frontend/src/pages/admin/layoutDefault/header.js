@@ -20,6 +20,9 @@ const languages = [
 function Header() {
     const [selected, setSelected] = useState(languages[0]);
     const [open, setOpen] = useState(false);
+    const storeUser = JSON.parse(localStorage.getItem("user"));
+    const userName = storeUser ? storeUser.fullName : "Admin";
+    const userAvatar = storeUser ? storeUser.avatar : "https://i.pravatar.cc/100";
 
     const handleSelect = (lang) => {
         setSelected(lang);
@@ -67,9 +70,9 @@ function Header() {
                             </div>
                             <div class="infor">
                                 <div class="infor__img">
-                                    <img src="https://i.pravatar.cc/100" alt="Course" />
+                                    <img src={userAvatar} alt="User Avatar" />
                                 </div>
-                                <span class="infor__name">Thanh</span>
+                                <span class="infor__name">{userName}</span>
                             </div>
                         </div>
                     </div>
