@@ -1,25 +1,25 @@
 import './login.scss'
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios";
 function Login() {
     const navigate = useNavigate();
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-
-        // Fake check: chỉ cần nhập "admin" và "123456" là vào được
-        if (username === "admin" && password === "123456") {
-            const fakeUser = {
-                username: "admin",
-                role: "admin",
-                token: "fake-jwt-token"
-            };
-            localStorage.setItem("user", JSON.stringify(fakeUser));
+        try {
+            const res = await axios.post("http://localhost:5000/api/admin/auth/login", {
+                email, password
+            });
+            const user = res.data.user;
+            localStorage.setItem("user", JSON.stringify(user));
             navigate("/admin");
-        } else {
-            alert("Sai tài khoản hoặc mật khẩu!");
+        } catch (error) {
+            alert(error.response?.data?.message || "Đăng nhập thất bại");
         }
+
+
     };
     return (
         <div className="auth">
@@ -32,7 +32,7 @@ function Login() {
                     <form className='auth__body__form' onSubmit={handleLogin}>
                         <div className='mb-3'>
                             <label htmlFor="account" className="form-label">Tài khoản</label>
-                            <input type="text" className="form-control" id="account" placeholder="Nhập tài khoản của bạn" required value={username} onChange={(e) => setUsername(e.target.value)} />
+                            <input type="text" className="form-control" id="account" placeholder="Nhập tài khoản của bạn" required value={email} onChange={(e) => setEmail(e.target.value)} />
                         </div>
                         <div className='mb-3'>
                             <label htmlFor="password" className="form-label">Mật khẩu</label>
