@@ -84,4 +84,14 @@ const editUser = async (req, res) => {
         res.status(500).json({ message: "Lỗi server" });
     }
 };
-module.exports = { createUser, getUsers, getById, editUser };
+const deletedUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await User.findByIdAndUpdate(id, { deleted: true });
+        res.json({ message: "Xóa người dùng thành công" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Lỗi server" });
+    }
+}
+module.exports = { createUser, getUsers, getById, editUser, deletedUser };

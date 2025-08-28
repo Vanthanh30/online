@@ -1,80 +1,120 @@
-import './categories.scss';
-import { useState, useEffect } from 'react';
+import "./categories.scss"
+import { useEffect, useState } from 'react';
+import { getCategoryTree, deleteCategory } from "../../../services/admin/categoryService";
+import { useNavigate, useLocation } from 'react-router-dom';
 
-import TextEditor from '../../../components/TinyMCE/index';
+function CategoriesPage() {
+    const [data, setData] = useState([]);
+    const navigate = useNavigate();
+    const location = useLocation();
 
-function Categories() {
-    const [name, setName] = useState('');
-    const [parentCategory, setParentCategory] = useState('');
-    const [description, setDescription] = useState('');
-    const [parentList, setParentList] = useState([]);
+    // Hàm flatten categories thành mảng phẳng với prefix
+    const flattenCategories = (categories, prefix = "") => {
+        return categories.flatMap((cat) => {
+            const current = {
+                ...cat,
+                displayTitle: prefix + cat.title,
+            };
+            const children = flattenCategories(cat.children || [], prefix + "-");
+            return [current, ...children];
+        });
+    };
+
+    // Fetch dữ liệu
+    const fetchCategories = async () => {
+        try {
+            const res = await getCategoryTree();
+            const flat = flattenCategories(res);
+            setData(flat);
+        } catch (err) {
+            console.error("Lỗi khi fetch categories:", err);
+        }
+    };
 
     useEffect(() => {
+        // Nếu navigate kèm reload thì fetch lại
+        if (location.state?.reload) {
+            fetchCategories();
+        } else if (data.length === 0) {
+            // load lần đầu
+            fetchCategories();
+        }
+    }, [location.state]);
 
-        setParentList([
-            { id: 1, name: 'Công nghệ' },
-            { id: 2, name: 'Ẩm thực' },
-            { id: 3, name: 'Du lịch' }
-        ]);
-    }, []);
+    // Xóa category
+    const handleDelete = async (id) => {
+        if (window.confirm("Bạn có chắc muốn xóa?")) {
+            try {
+                await deleteCategory(id);
+                fetchCategories();
+            } catch (err) {
+                console.error("Lỗi khi xóa category:", err);
+            }
+        }
+    };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const newCategory = {
-            name,
-            parentCategory,
-            description
-        };
-
-        console.log('Dữ liệu gửi lên backend:', newCategory);
+    // Sửa category
+    const handleEdit = (id) => {
+        navigate(`/admin/categories/edit/${id}`);
     };
 
     return (
-        <div className="categories-page">
-            <h1>Thêm mới danh mục</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Tên danh mục</label>
-                    <input
-                        type="text"
-                        placeholder="Nhập tên danh mục"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
+        <div className="categories">
+            <div className="container">
+                <div className="row">
+                    <div className="col-12">
+                        <h1 className="categories__title">Danh sách khóa học</h1>
 
-                    <label>Danh mục cha</label>
-                    {parentList.length > 0 ? (
-                        <select
-                            value={parentCategory}
-                            onChange={(e) => setParentCategory(e.target.value)}
-                        >
-                            <option value="">-- Chọn danh mục cha --</option>
-                            {parentList.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name}
-                                </option>
-                            ))}
-                        </select>
-                    ) : (
-                        <input
-                            type="text"
-                            placeholder="Nhập danh mục cha"
-                            value={parentCategory}
-                            onChange={(e) => setParentCategory(e.target.value)}
-                        />
-                    )}
+                        <table className="categories__table">
+                            <thead>
+                                <tr>
+                                    <th>Số thứ tự</th>
+                                    <th>Tên danh mục</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.map((category, index) => (
+                                    <tr key={category._id}>
+                                        <td>{index + 1}</td>
+                                        <td>{category.displayTitle}</td>
+                                        <td>
+                                            <span
+                                                className={`badge ${category.status === "active" ? "bg-success" : "bg-danger"}`}
+                                            >
+                                                {category.status === "active"
+                                                    ? "Hoạt động"
+                                                    : "Ngừng hoạt động"}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button
+                                                className="btn categories__btn-edit"
+                                                onClick={() => handleEdit(category._id)}
+                                            >
+                                                Sửa
+                                            </button>
+                                            <button
+                                                className="btn categories__btn-delete"
+                                                onClick={() => handleDelete(category._id)}
+                                            >
+                                                Xóa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <button className="categories__btn-add">
+                            <a href="/admin/categories/create">Thêm danh mục</a>
+                        </button>
+                    </div>
                 </div>
-
-                <div className="form-group">
-                    <label>Mô tả</label>
-                    <TextEditor onChange={(content) => setDescription(content)} />
-                </div>
-
-                <button type="submit" className="btn-submit">Lưu</button>
-            </form>
+            </div>
         </div>
     );
 }
 
-export default Categories;
+export default CategoriesPage;

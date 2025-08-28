@@ -11,6 +11,8 @@ import AddCourse from "../pages/admin/course/addCourse";
 import Accounts from "../pages/admin/accounts/index";
 import CreateAccounts from "../pages/admin/accounts/createAccount";
 import EditAccount from "../pages/admin/accounts/editAccount";
+import CreateCategory from "../pages/admin/categories/createCategory";
+import EditCategories from "../pages/admin/categories/editCategory";
 export const routes = [
     {
         path: "/",
@@ -44,8 +46,16 @@ export const routes = [
                                 element: <Dashboard />,
                             },
                             {
-                                path: 'categories',
+                                path: 'categories/',
                                 element: <Categories />,
+                            },
+                            {
+                                path: 'categories/create',
+                                element: <CreateCategory />,
+                            },
+                            {
+                                path: 'categories/edit/:id',
+                                element: <EditCategories />,
                             },
                             {
                                 path: 'courses/',

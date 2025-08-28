@@ -18,3 +18,7 @@ export const editUser = async (id, data) => {
         headers: { "Content-Type": "multipart/form-data" }
     });
 };
+export const deleteUser = async (id) => {
+    return await axios.delete(`${API_URL}/delete/${id}`);
+
+}

@@ -19,6 +19,7 @@
     "express-session": "^1.18.2",
     "md5": "^2.3.0",
     "mongoose": "^8.16.4",
+    "mongoose-slug-updater": "^3.3.0",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0"
   },

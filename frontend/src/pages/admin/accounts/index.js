@@ -1,6 +1,6 @@
 import './account.scss'
 import { useEffect, useState } from 'react';
-import { getUsers } from '../../../services/admin/userService';
+import { getUsers, deleteUser } from '../../../services/admin/userService';
 import { useNavigate } from 'react-router-dom';
 function AdminAccountsPage() {
     const [data, setData] = useState([]);
@@ -18,6 +18,16 @@ function AdminAccountsPage() {
     }, []);
     const handleEdit = (id) => {
         navigate(`/admin/accounts/edit/${id}`);
+    };
+    const handleDelete = async (id) => {
+        if (window.confirm("Bạn có chắc muốn xóa?")) {
+            try {
+                await deleteUser(id);
+                setData(data.filter((item) => item._id !== id));
+            } catch (err) {
+                console.error(err);
+            }
+        }
     };
     return (
         <div className="accounts">
@@ -59,7 +69,7 @@ function AdminAccountsPage() {
                                         </td>
                                         <td>
                                             <button className="btn accounts__btn-edit" onClick={() => handleEdit(account._id)}>Sửa</button>
-                                            <button className="btn accounts__btn-delete">Xóa</button>
+                                            <button className="btn accounts__btn-delete" onClick={() => handleDelete(account._id)}>Xóa</button>
                                         </td>
                                     </tr>
                                 ))}
