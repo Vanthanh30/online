@@ -1,200 +1,144 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from "react-router-dom";
 import './course.scss';
 import TextEditor from '../../../components/TinyMCE/index';
-import { createCourse } from "../../../services/admin/courseService";
+import { getCourseId, editCourse } from "../../../services/admin/courseService";
 import { getCategory } from "../../../services/admin/categoryService";
 
 const levels = ['Cơ bản', 'Trung cấp', 'Nâng cao'];
 const languages = ['Tiếng Việt', 'Tiếng Anh'];
 
-function AddCourse() {
+function EditCourse() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    // state cơ bản
     const [title, setTitle] = useState("");
-    const [categoryList, setCategoryList] = useState([]);
     const [category, setCategory] = useState("");
-    const [level, setLevel] = useState(levels[0]);
-    const [language, setLanguage] = useState(languages[0]);
+    const [level, setLevel] = useState("Cơ bản");
+    const [language, setLanguage] = useState("Tiếng Việt");
     const [instructor, setInstructor] = useState("");
     const [status, setStatus] = useState("Sắp khai giảng");
     const [description, setDescription] = useState("");
+    const [categoryList, setCategoryList] = useState([]);
 
+    // state thời gian
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [durationHours, setDurationHours] = useState("");
+    const [durationHours, setDurationHours] = useState(0);
 
+    // state pricing
     const [price, setPrice] = useState(0);
     const [discount, setDiscount] = useState(0);
-    const [finalPrice, setFinalPrice] = useState(0);
+    const finalPrice = Math.round(price * (1 - discount / 100));
 
+    // state media
     const [imageFile, setImageFile] = useState(null);
     const [videoFile, setVideoFile] = useState(null);
-    const [imageURL, setImageURL] = useState("");
-    const [videoURL, setVideoURL] = useState("");
+    const [imageURL, setImageURL] = useState(""); // preview ảnh đã lưu
+    const [videoURL, setVideoURL] = useState(""); // preview video đã lưu
 
-    const [modules, setModules] = useState([
-        { id: Date.now(), title: "", lessons: [{ id: Date.now() + 1, title: "" }] },
-    ]);
+    // state curriculum
+    const [modules, setModules] = useState([]);
 
-    // ✅ lấy danh mục từ API
+    // load course + categories
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await getCategory();
+        getCourseId(id).then(res => {
+            const c = res.data;
+            setTitle(c.title);
+            setCategory(c.category);
+            setLevel(c.level);
+            setLanguage(c.language);
+            setInstructor(c.instructor);
+            setStatus(c.status);
+            setDescription(c.description || "");
+            setStartDate(c.time?.startDate?.substring(0, 10) || "");
+            setEndDate(c.time?.endDate?.substring(0, 10) || "");
+            setDurationHours(c.time?.durationHours || 0);
+            setPrice(c.pricing?.price || 0);
+            setDiscount(c.pricing?.discount || 0);
+            setModules(c.curriculum || []);
+            setImageURL(c.media?.imageUrl || "");
+            setVideoURL(c.media?.videoUrl || "");
+        });
 
-                let categories = [];
-                // xử lý mọi kiểu response
-                if (Array.isArray(res)) {
-                    categories = res;
-                } else if (res.categories && Array.isArray(res.categories)) {
-                    categories = res.categories;
-                } else if (res.data && Array.isArray(res.data)) {
-                    categories = res.data;
-                }
+        getCategory().then(res => setCategoryList(res.categories || []));
+    }, [id]);
 
-                setCategoryList(categories);
-                if (categories.length > 0) setCategory(categories[0]._id);
-            } catch (err) {
-                console.error("❌ Lỗi tải danh mục:", err);
-                setCategoryList([]);
-            }
-        };
-        fetchCategories();
-    }, []);
-
-    // ✅ tự tính giá sau giảm
-    useEffect(() => {
-        const newFinal = price - (price * discount) / 100;
-        setFinalPrice(newFinal > 0 ? newFinal : 0);
-    }, [price, discount]);
-
-    // --- HANDLERS ---
-    const resetForm = () => {
-        setTitle("");
-        setCategory(categoryList.length > 0 ? categoryList[0]._id : "");
-        setLevel(levels[0]);
-        setLanguage(languages[0]);
-        setInstructor("");
-        setStatus("Sắp khai giảng");
-        setDescription("");
-        setStartDate("");
-        setEndDate("");
-        setDurationHours("");
-        setPrice(0);
-        setDiscount(0);
-        setFinalPrice(0);
-        setImageFile(null);
-        setVideoFile(null);
-        setImageURL("");
-        setVideoURL("");
-        setModules([
-            { id: Date.now(), title: "", lessons: [{ id: Date.now() + 1, title: "" }] },
-        ]);
+    // =================== CRUD cho module/lesson ===================
+    const addModule = () => {
+        setModules([...modules, { id: Date.now(), title: "", lessons: [] }]);
     };
 
+    const removeModule = (id) => {
+        setModules(modules.filter(m => m.id !== id));
+    };
+
+    const updateModuleTitle = (id, value) => {
+        setModules(modules.map(m => m.id === id ? { ...m, title: value } : m));
+    };
+
+    const addLesson = (moduleId) => {
+        setModules(modules.map(m =>
+            m.id === moduleId ? { ...m, lessons: [...m.lessons, { id: Date.now(), title: "" }] } : m
+        ));
+    };
+
+    const removeLesson = (moduleId, lessonId) => {
+        setModules(modules.map(m =>
+            m.id === moduleId ? { ...m, lessons: m.lessons.filter(l => l.id !== lessonId) } : m
+        ));
+    };
+
+    const updateLessonTitle = (moduleId, lessonId, value) => {
+        setModules(modules.map(m =>
+            m.id === moduleId
+                ? { ...m, lessons: m.lessons.map(l => l.id === lessonId ? { ...l, title: value } : l) }
+                : m
+        ));
+    };
+
+    // =================== Submit ===================
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("category", category);
+        formData.append("level", level);
+        formData.append("language", language);
+        formData.append("instructor", instructor);
+        formData.append("status", status);
+        formData.append("description", description);
+
+        formData.append("time", JSON.stringify({ startDate, endDate, durationHours }));
+        formData.append("pricing", JSON.stringify({ price, discount, finalPrice }));
+        formData.append("curriculum", JSON.stringify(modules));
+
+        if (imageFile) formData.append("imageUrl", imageFile);
+        if (videoFile) formData.append("videoUrl", videoFile);
+
+        await editCourse(id, formData);
+        navigate("/admin/courses"); // quay lại danh sách
+    };
+
+    // =================== Media Preview ===================
     const onImageChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setImageFile(file);
-            setImageURL(URL.createObjectURL(file));
-        }
+        setImageFile(file);
+        setImageURL(URL.createObjectURL(file));
     };
 
     const onVideoChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setVideoFile(file);
-            setVideoURL(URL.createObjectURL(file));
-        }
-    };
-
-    // --- MODULES & LESSONS ---
-    const addModule = () =>
-        setModules([...modules, { id: Date.now(), title: "", lessons: [] }]);
-    const removeModule = (id) =>
-        setModules(modules.filter((m) => m.id !== id));
-    const updateModuleTitle = (id, value) =>
-        setModules(modules.map((m) => (m.id === id ? { ...m, title: value } : m)));
-    const addLesson = (moduleId) => {
-        setModules(
-            modules.map((m) =>
-                m.id === moduleId
-                    ? { ...m, lessons: [...m.lessons, { id: Date.now(), title: "" }] }
-                    : m
-            )
-        );
-    };
-    const removeLesson = (moduleId, lessonId) => {
-        setModules(
-            modules.map((m) =>
-                m.id === moduleId
-                    ? { ...m, lessons: m.lessons.filter((l) => l.id !== lessonId) }
-                    : m
-            )
-        );
-    };
-    const updateLessonTitle = (moduleId, lessonId, value) => {
-        setModules(
-            modules.map((m) =>
-                m.id === moduleId
-                    ? {
-                        ...m,
-                        lessons: m.lessons.map((l) =>
-                            l.id === lessonId ? { ...l, title: value } : l
-                        ),
-                    }
-                    : m
-            )
-        );
-    };
-
-    // --- SUBMIT ---
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const formData = new FormData();
-            formData.append("title", title);
-            formData.append("category", category);
-            formData.append("level", level);
-            formData.append("language", language);
-            formData.append("instructor", instructor);
-            formData.append("status", status);
-            formData.append("time", JSON.stringify({
-                startDate,
-                endDate,
-                durationHours
-            }));
-
-            formData.append("pricing", JSON.stringify({
-                price,
-                discount,
-                finalPrice
-            }));
-
-            formData.append("description", description);
-
-            const cleanedModules = modules.map((m) => ({
-                title: m.title,
-                lessons: m.lessons.map((l) => ({ title: l.title })),
-            }));
-            formData.append("curriculum", JSON.stringify(cleanedModules));
-
-            if (imageFile) formData.append("imageUrl", imageFile);
-            if (videoFile) formData.append("videoUrl", videoFile);
-
-            const res = await createCourse(formData);
-            alert("✅ " + res.message);
-            resetForm();
-        } catch (err) {
-            console.error(err);
-            alert("❌ Lỗi khi tạo khóa học!");
-        }
+        setVideoFile(file);
+        setVideoURL(URL.createObjectURL(file));
     };
 
     return (
         <div className="add-course">
             <div className="add-course__header">
-                <h1>Thêm khóa học mới</h1>
+                <h1>Chỉnh sửa khóa học</h1>
                 <div className="add-course__header-actions">
-                    <button type="button" className="btn btn-secondary" onClick={resetForm}>Làm mới</button>
                     <button form="add-course-form" className="btn btn-primary">Lưu khóa học</button>
                 </div>
             </div>
@@ -215,16 +159,17 @@ function AddCourse() {
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                             >
-                                {categoryList.length === 0 ? (
-                                    <option disabled>Chưa có danh mục</option>
-                                ) : (
+                                {Array.isArray(categoryList) && categoryList.length > 0 ? (
                                     categoryList.map((c) => (
                                         <option key={c._id} value={c._id}>
                                             {c.title}
                                         </option>
                                     ))
+                                ) : (
+                                    <option disabled>Chưa có danh mục</option>
                                 )}
                             </select>
+
                         </div>
                         <div className="form-group">
                             <label>Trình độ</label>
@@ -242,7 +187,7 @@ function AddCourse() {
 
                     <div className="form-group">
                         <label>Mô tả chi tiết</label>
-                        <TextEditor onChange={setDescription} />
+                        <TextEditor value={description} onChange={setDescription} />
                     </div>
 
                     <div className="panel">
@@ -313,7 +258,13 @@ function AddCourse() {
 
                     <div className="form-group">
                         <label>Thời lượng (giờ)</label>
-                        <input type="number" min="0" className="form-control" value={durationHours} onChange={e => setDurationHours(e.target.value)} />
+                        <input
+                            type="number"
+                            min="0"
+                            className="form-control"
+                            value={durationHours}
+                            onChange={e => setDurationHours(Number(e.target.value))}
+                        />
                     </div>
 
                     <div className="panel">
@@ -349,4 +300,5 @@ function AddCourse() {
         </div>
     );
 }
-export default AddCourse;
+
+export default EditCourse;

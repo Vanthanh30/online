@@ -1,32 +1,38 @@
-import './course.scss';
+import "./course.scss";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getCourses, deleteCourse } from "../../../services/admin/courseService.js";
 
 function Courses() {
-    const data = [
-        {
-            id: 1,
-            title: "Khóa học 1",
-            image: "/#",
-            instructor: "Giảng viên 1",
-            duration: "10 giờ",
-            status: "Đang diễn ra"
-        },
-        {
-            id: 2,
-            title: "Khóa học 2",
-            image: "/#",
-            instructor: "Giảng viên 2",
-            duration: "8 giờ",
-            status: "Hoàn thành"
-        },
-        {
-            id: 3,
-            title: "Khóa học 3",
-            image: "/#",
-            instructor: "Giảng viên 3",
-            duration: "8 giờ",
-            status: "Đã hủy"
+    const [courses, setCourses] = useState([]);
+    const navigate = useNavigate();
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const res = await getCourses();
+                setCourses(res.data); // API trả { message, data: [...] }
+            } catch (err) {
+                console.error("❌ Lỗi khi lấy danh sách khóa học:", err);
+            }
+        };
+        fetchCourses();
+    }, []);
+    const handleEdit = (id) => {
+        navigate(`/admin/courses/edit/${id}`);
+    };
+    const handleDelete = (id) => {
+        const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa khóa học này?");
+        if (confirmDelete) {
+            deleteCourse(id)
+                .then((res) => {
+                    alert(res.message);
+                    setCourses(courses.filter((course) => course._id !== id));
+                })
+                .catch((err) => {
+                    console.error("❌ Lỗi khi xóa khóa học:", err);
+                });
         }
-    ];
+    };
     return (
         <div className="courses">
             <div className="container">
@@ -41,47 +47,65 @@ function Courses() {
                                     <th>Tên khóa học</th>
                                     <th>Hình ảnh</th>
                                     <th>Giảng viên</th>
-                                    <th>Thời gian</th>
+                                    <th>Thời gian (giờ)</th>
                                     <th>Trạng thái</th>
                                     <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.map((course, index) => (
-                                    <tr key={course.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{course.title}</td>
-                                        <td>
-                                            <img
-                                                src={course.image}
-                                                alt={course.title}
-                                                className="courses__image"
-                                            />
-                                        </td>
-                                        <td>{course.instructor}</td>
-                                        <td>{course.duration}</td>
-                                        <td>
-                                            <span className={`badge ${course.status === "Đang diễn ra" ? "bg-success" : course.status === "Hoàn thành" ? "bg-primary" : "bg-danger"}`}>
-                                                {course.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <button className="btn courses__btn-edit">Sửa</button>
-                                            <button className="btn courses__btn-delete">Xóa</button>
+                                {courses.length > 0 ? (
+                                    courses.map((course, index) => (
+                                        <tr key={course._id}>
+                                            <td>{index + 1}</td>
+                                            <td>{course.title}</td>
+                                            <td>
+                                                {course.media?.imageUrl ? (
+                                                    <img
+                                                        src={course.media.imageUrl}
+                                                        alt={course.title}
+                                                        className="courses__image"
+                                                    />
+                                                ) : (
+                                                    "Chưa có ảnh"
+                                                )}
+                                            </td>
+                                            <td>{course.instructor}</td>
+                                            <td>{course.time?.durationHours || 0}</td>
+                                            <td>
+                                                <span
+                                                    className={`badge ${course.status === "Đang diễn ra"
+                                                        ? "bg-success"
+                                                        : course.status === "Hoàn thành"
+                                                            ? "bg-primary"
+                                                            : "bg-danger"
+                                                        }`}
+                                                >
+                                                    {course.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button className="btn courses__btn-edit" onClick={() => handleEdit(course._id)}>Sửa</button>
+                                                <button className="btn courses__btn-delete" onClick={() => handleDelete(course._id)}>Xóa</button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="7" style={{ textAlign: "center" }}>
+                                            Không có khóa học nào
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
 
-                        <button className=" courses__btn-add">
+                        <button className="courses__btn-add">
                             <a href="/admin/courses/add">Thêm khóa học</a>
                         </button>
-
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
 

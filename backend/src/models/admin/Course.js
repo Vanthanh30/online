@@ -25,11 +25,10 @@ const courseSchema = new Schema({
 
     curriculum: [
         {
-            _id: ObjectId,
+
             title: String,        // Tên chương
             lessons: [
                 {
-                    _id: ObjectId,
                     title: String     // Tên bài học
                 }
             ]

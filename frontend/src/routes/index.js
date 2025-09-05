@@ -13,6 +13,7 @@ import CreateAccounts from "../pages/admin/accounts/createAccount";
 import EditAccount from "../pages/admin/accounts/editAccount";
 import CreateCategory from "../pages/admin/categories/createCategory";
 import EditCategories from "../pages/admin/categories/editCategory";
+import EditCourse from "../pages/admin/course/editCourse";
 export const routes = [
     {
         path: "/",
@@ -64,6 +65,10 @@ export const routes = [
                             {
                                 path: 'courses/add',
                                 element: <AddCourse />,
+                            },
+                            {
+                                path: 'courses/edit/:id',
+                                element: <EditCourse />,
                             },
                             {
                                 path: 'accounts/',
