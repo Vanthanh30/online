@@ -2,9 +2,16 @@ import './account.scss'
 import { useEffect, useState } from 'react';
 import { getUsers, deleteUser } from '../../../services/admin/userService';
 import { useNavigate } from 'react-router-dom';
+import Pagination from '../../../components/Pagination';
 function AdminAccountsPage() {
     const [data, setData] = useState([]);
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
+    const userPerPage = 5;
+    const indexOfLastAccount = currentPage * userPerPage;
+    const indexOfFirstAccount = indexOfLastAccount - userPerPage;
+    const currentAccount = data.slice(indexOfFirstAccount, indexOfLastAccount);
+    const totalPages = Math.ceil(data.length / userPerPage);
     useEffect(() => {
         const fetchAccounts = async () => {
             try {
@@ -49,7 +56,7 @@ function AdminAccountsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.map((account, index) => (
+                                {currentAccount.map((account, index) => (
                                     <tr key={account._id}>
                                         <td>{index + 1}</td>
                                         <td>
@@ -75,7 +82,11 @@ function AdminAccountsPage() {
                                 ))}
                             </tbody>
                         </table>
-
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={(page) => setCurrentPage(page)}
+                        />
                         <button className="accounts__btn-add">
                             <a href="/admin/accounts/create">Thêm tài khoản</a>
                         </button>
